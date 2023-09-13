@@ -12,7 +12,7 @@ func PanicErr(err error) {
 	}
 }
 
-func DbConnection() *sql.DB {
+func DBCreate() {
 	dns := "ngoquyphi:ngoquyphi@tcp(127.0.0.1:3306)/"
 
 	db, err := sql.Open("mysql", dns)
@@ -38,10 +38,22 @@ func DbConnection() *sql.DB {
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS WareHouse(ProductId CHAR(6) PRIMARY KEY, ProductName VARCHAR(30),Price DOUBLE, Quantity INT)")
 	PanicErr(err)
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS SoldHistory(ProductId CHAR(6),StaffId INT,SellTime TIMESTAMP,Price DOUBLE)")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS SoldHistory(BillId CHAR(4),ProductId CHAR(6),StaffId INT,SoldTime TIMESTAMP,Quantity INT)")
 	PanicErr(err)
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS ImportWarehouse(ProductId CHAR(6), Quantity INT,ImportTime TIMESTAMP)")
 	PanicErr(err)
-	return db
+
+	_, err = db.Exec(`CREATE DEFINER = CURRENT_USER TRIGGER  AUTOUPDATE
+	AFTER INSERT ON soldhistory FOR EACH ROW
+	BEGIN
+	UPDATE warehouse 
+	SET warehouse.Quantity = warehouse.Quantity - (SELECT TOP 1 soldhistory.Quantity 
+		FROM soldhistory 
+		
+		WHERE cbx
+		JOIN soldhistory ON soldhistory.ProductId = warehouse.ProductId
+		ORDERED BY SoldTime DESC
+	END;`)
+
 }

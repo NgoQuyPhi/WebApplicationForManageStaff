@@ -1,4 +1,4 @@
-package crudmodule
+package staff
 
 import (
 	datastruct "PersonalProject/QlyNV/DataStruct"
@@ -10,7 +10,7 @@ import (
 
 func Create_New_Staff_Data(db *gorm.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		var data datastruct.NewStaffData
+		var data datastruct.StaffData
 		if err := c.ShouldBind(&data); err != nil {
 			c.JSON(http.StatusBadGateway, gin.H{
 				"Error": err,
@@ -18,10 +18,11 @@ func Create_New_Staff_Data(db *gorm.DB) func(*gin.Context) {
 			return
 		}
 
-		if err := db.Table("ManageStaff").Create(&data).Error; err != nil {
+		if err := db.Table("managestaff").Create(&data).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"Error:": err,
 			})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
