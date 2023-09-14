@@ -38,6 +38,16 @@ func CreateNewBill(db *gorm.DB) func(*gin.Context) {
 			return
 		}
 
+		for i := range data {
+			err = db.Exec("UPDATE warehouse SET Quantity = Quantity - ? WHERE ProductId = ?", data[i].Quantity, data[i].ProductId).Error
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"Error:": err,
+				})
+				return
+			}
+		}
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"Create New Bill:": "Success",
 		})

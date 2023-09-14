@@ -8,14 +8,20 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddNewProductData(db *gorm.DB) func(*gin.Context) {
+func DeleteData(db *gorm.DB) func(*gin.Context) {
 	return func(ctx *gin.Context) {
 		BillId := ctx.Param("billid")
-
+		ProductId := ctx.Param("productid")
 		var data datastruct.SoldList
 
-		err := ctx.ShouldBind(&data)
-		data.BillId = BillId
+		err := db.Table("soldlist").Where("BillId = ? AND ProductId = ?", BillId, ProductId).First(&data).Error
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"Error:": err,
+			})
+			return
+		}
+		err = db.Table("soldlist").Where("BillId = ? AND ProductId = ?", BillId, ProductId).Delete(nil).Error
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"Error:": err,
@@ -23,9 +29,7 @@ func AddNewProductData(db *gorm.DB) func(*gin.Context) {
 			return
 		}
 
-		err = db.
-			Table("soldhistory").
-			Create(&data).Error
+		err = db.Exec("UPDATE warehouse SET Quantity = Quantity + ? WHERE ProductId = ?", data.Quantity, data.ProductId).Error
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -34,15 +38,7 @@ func AddNewProductData(db *gorm.DB) func(*gin.Context) {
 			return
 		}
 
-		err = db.Exec("UPDATE warehouse SET Quantity = Quantity - ? WHERE ProductId = ?", data.Quantity, data.ProductId).Error
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"Error:": err,
-			})
-			return
-		}
-
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusOK, gin.H{
 			"Change Bill": "Success",
 		})
 

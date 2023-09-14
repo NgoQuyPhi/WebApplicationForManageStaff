@@ -44,7 +44,8 @@ func main() {
 	{
 		Bill.POST("/newbill", bill.CreateNewBill(db))
 		Bill.GET("/showbill/:billid", bill.ShowBill(db))
-
+		Bill.POST("/add/:billid", bill.AddNewProductData(db))
+		Bill.DELETE("del/:billid/:productid", bill.DeleteData(db))
 	}
 
 	r.Run()

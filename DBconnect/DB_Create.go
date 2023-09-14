@@ -44,16 +44,4 @@ func DBCreate() {
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS ImportWarehouse(ProductId CHAR(6), Quantity INT,ImportTime TIMESTAMP)")
 	PanicErr(err)
 
-	_, err = db.Exec(`CREATE DEFINER = CURRENT_USER TRIGGER  AUTOUPDATE
-	AFTER INSERT ON soldhistory FOR EACH ROW
-	BEGIN
-	UPDATE warehouse 
-	SET warehouse.Quantity = warehouse.Quantity - (SELECT TOP 1 soldhistory.Quantity 
-		FROM soldhistory 
-		
-		WHERE cbx
-		JOIN soldhistory ON soldhistory.ProductId = warehouse.ProductId
-		ORDERED BY SoldTime DESC
-	END;`)
-
 }
